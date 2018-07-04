@@ -1,0 +1,3 @@
+# first line = min price, second line = max price
+0
+12000

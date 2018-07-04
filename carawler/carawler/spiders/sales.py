@@ -19,7 +19,8 @@ class SalesSpider(scrapy.Spider):
         count = 1
         for car in cars:
             inst = {}
-            inst['id'] = count
+            inst['id'] = car.xpath('a/@data-id').extract_first()
+            inst['count'] = count
             inst['title'] = car.xpath('a/text()').extract_first()
             inst['price'] = car.xpath('.//span[@class="result-price"]/text()').extract_first()
             inst['location'] = car.xpath('.//span[@class="result-hood"]/text()').extract_first()

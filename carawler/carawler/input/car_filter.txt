@@ -1,1 +1,13 @@
 #year, manufacturer, model
+2014 chevy malibu
+2014 chevrolet malibu
+2015 chevy malibu
+2015 chevrolet malibu
+2016 chevy malibu
+2016 chevrolet malibu
+2009 nissan maxima
+2010 nissan maxima
+2011 nissan maxima
+2012 nissan maxima
+2013 nissan maxima
+2014 nissan maxima

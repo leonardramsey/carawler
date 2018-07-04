@@ -68,7 +68,7 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 16
 ITEM_PIPELINES = {
    # 'carawler.pipelines.CarawlerFilterPipeline': 100,
    'carawler.pipelines.CarawlerCSVPipeline': 200,
-   'carawler.pipelines.CarawlerConvertToSpreadsheetPipeline': 300,
+   'carawler.pipelines.CarawlerConvertToSpreadsheetPipeline': 500,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
