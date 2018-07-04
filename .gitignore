@@ -1,3 +1,5 @@
 # Gitignore for 'carawaler' application
 *.pyc
 *.swp
+.idea
+carawler/carawler/output/
