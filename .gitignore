@@ -1,1 +1,3 @@
 # Gitignore for 'carawaler' application
+carawler/carawler/*.pyc
+
