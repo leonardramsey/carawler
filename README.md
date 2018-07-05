@@ -36,7 +36,7 @@ All output files are stored in the carawler/output directory.
 
 * cars.csv
 
-<i>A list of all post results from the Craigslist scraping in csv format. Columns delimited by ','.</i> 
+<i>A list of all post results from the Craigslist scraping in csv format. Columns delimited by commas (',').</i> 
 
 * cars.xlsx
 
