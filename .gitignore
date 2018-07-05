@@ -3,3 +3,6 @@
 *.swp
 .idea
 carawler/carawler/output/
+.DS_Store
+carawler/.DS_Store
+carawler/carawler/.DS_Store

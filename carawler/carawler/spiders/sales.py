@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import scrapy
+from scrapy import Request
 
 
 class SalesSpider(scrapy.Spider):
@@ -16,6 +17,7 @@ class SalesSpider(scrapy.Spider):
     def parse(self, response):
         item = {}
         cars = response.xpath('//p[@class="result-info"]')
+        relative_next_url = response.xpath('//a[@class="button next"]/@href').extract_first()
         for car in cars:
             inst = {}
             inst['id'] = car.xpath('a/@data-id').extract_first()
@@ -24,4 +26,14 @@ class SalesSpider(scrapy.Spider):
             inst['location'] = car.xpath('.//span[@class="result-hood"]/text()').extract_first()
             inst['url'] = car.xpath('a/@href').extract_first()
             item[inst['id']] = inst
-        return item
+        print("================================ response url =========================================")
+        print(response.url)
+        print("================================ relative next url =========================================")
+        print(relative_next_url)
+        absolute_url = response.url[0:response.url.find('/search')]
+        print("================================ absolute url =========================================")
+        print(absolute_url)
+        if relative_next_url:
+            yield Request(absolute_url + relative_next_url, meta={'item':item})
+
+        yield item
