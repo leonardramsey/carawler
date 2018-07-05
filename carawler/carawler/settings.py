@@ -66,8 +66,8 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 16
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   # 'carawler.pipelines.CarawlerFilterPipeline': 100,
-   'carawler.pipelines.CarawlerCSVPipeline': 200,
+   'carawler.pipelines.CarawlerFilterPipeline': 100,
+   'carawler.pipelines.CarawlerCSVPipeline': 300,
    'carawler.pipelines.CarawlerConvertToSpreadsheetPipeline': 500,
 }
 

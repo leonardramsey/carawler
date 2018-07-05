@@ -10,6 +10,8 @@ from openpyxl import Workbook
 from scrapy.exceptions import DropItem
 
 # stage 1: read in from interested cars file and car_filter.txt out cars
+# if the car title does not have any strings from the filter, remove the result
+# if the car's price is outside of the price filter range, remove the car
 class CarawlerFilterPipeline(object):
 
     # open filter files if they exist
@@ -17,41 +19,37 @@ class CarawlerFilterPipeline(object):
         self.car_filter_filename = 'carawler/input/car_filter.txt'
         self.price_filter_filename = 'carawler/input/price_filter.txt'
         try:
-            self.car_filter = open(self.car_filter_filename, 'rb')
+            with open(self.car_filter_filename, 'rb') as car_filter:
+                self.car_filter = car_filter.readlines()
         except:
-            self.car_filter = None
+            self.cars = None
         try:
-            self.price_filter = open(self.price_filter_filename, 'rb')
+            with open(self.price_filter_filename, 'rb') as price_filter:
+                self.min_price = int(price_filter.readline())
+                self.max_price = int(price_filter.readline())
         except:
-            self.price_filter = None
+            self.min_price = 0
+            self.max_price = 10**9 # a billion...
 
     def process_item(self, item, spider):
-        for i in xrange(0, len(item)):
-            row = item[i]
-            id = row['id']
+        ids_to_remove = []
+        for id in item:
+            # try:
+            #     if item[id]['title'].encode('utf-8').strip() is not in self.car_filter
+            # except:
+            #     title = 'N/A'
             try:
-                title = row['title'].encode('utf-8').strip().lower()
-                if title not in self.car_filter.readlines().lower():
-                    pass
-            except:
-                title = 'N/A'
-            try:
-                price = row['price'].encode('utf-8').strip()
-            except:
-                price = 'N/A'
-            try:
-                location = row['location'].encode('utf-8').strip()
-            except:
-                location = 'N/A'
-            try:
-                url = row['url'].encode('utf-8').strip()
-            except:
-                url = 'N/A'
+                price = int(item[id]['price'].replace('$',''))
+            except:  # price doesn't exist
+                price = None
+                ids_to_remove.append(id)
+            if price is not None:
+                if self.max_price < price or self.min_price > price:
+                    ids_to_remove.append(id)
 
-        if self.car_filter is not None:
-            self.car_filter.close()
-        if self.price_filter is not None:
-            self.price_filter.close()
+        # remove items that did not get past filters
+        for id in ids_to_remove:
+            del item[id]
 
         return item
 

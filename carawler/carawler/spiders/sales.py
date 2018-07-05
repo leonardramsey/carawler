@@ -5,7 +5,7 @@ import scrapy
 class SalesSpider(scrapy.Spider):
     name = 'sales'
     allowed_domains = ['craigslist.org']
-    start_urls = [#'https://norfolk.craigslist.org/search/cta',
+    start_urls = ['https://norfolk.craigslist.org/search/cta',
                   #     'https://richmond.craigslist.org/search/cta',
                   #     'https://washingtondc.craigslist.org/search/cta',
                   #     'https://charlottesville.craigslist.org/search/cta',

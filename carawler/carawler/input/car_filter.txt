@@ -1,4 +1,3 @@
-#year, manufacturer, model
 2014 chevy malibu
 2014 chevrolet malibu
 2015 chevy malibu
