@@ -10,3 +10,19 @@
 2012 nissan maxima
 2013 nissan maxima
 2014 nissan maxima
+volkswagen cc
+vw cc
+2012 volkswagen passat
+2012 vw passat
+2013 volkswagen passat
+2013 vw passat
+2014 volkswagen passat
+2014 vw passat
+2015 volkswagen passat
+2015 vw passat
+buick lacrosse
+infiniti
+g37
+jaguar
+lexus es
+lexus ls

@@ -21,6 +21,8 @@ class CarawlerFilterPipeline(object):
         try:
             with open(self.car_filter_filename, 'rb') as car_filter:
                 self.car_filter = car_filter.readlines()
+                for i in range(0, len(self.car_filter)):
+                    self.car_filter[i] = self.car_filter[i].strip('\n').replace('*', '')
         except:
             self.cars = None
         try:
@@ -34,18 +36,29 @@ class CarawlerFilterPipeline(object):
     def process_item(self, item, spider):
         ids_to_remove = []
         for id in item:
-            # try:
-            #     if item[id]['title'].encode('utf-8').strip() is not in self.car_filter
-            # except:
-            #     title = 'N/A'
             try:
-                price = int(item[id]['price'].replace('$',''))
-            except:  # price doesn't exist
-                price = None
-                ids_to_remove.append(id)
-            if price is not None:
-                if self.max_price < price or self.min_price > price:
+                title = item[id]['title'].encode('utf-8').strip().lower()
+            except:
+                title = None
+
+            # if none of the cars in the car filter are within the post title, remove this post from the results
+            if title is not None:
+                if any(substring in title for substring in self.car_filter):
+                    # if the post is within the filter, check if the price is also in the filter; remove if not
+                    try:
+                        price = int(item[id]['price'].replace('$',''))
+                    except:  # price doesn't exist
+                        price = None
+                        ids_to_remove.append(id)
+                    if price is not None:
+                        if self.max_price < price or self.min_price > price:
+                            ids_to_remove.append(id)
+                else:
                     ids_to_remove.append(id)
+
+            # post has no title so remove this from results
+            else:
+                ids_to_remove.append(id)
 
         # remove items that did not get past filters
         for id in ids_to_remove:
@@ -57,12 +70,29 @@ class CarawlerFilterPipeline(object):
 # stage 2: store data in csv file
 class CarawlerCSVPipeline(object):
 
+    def __init__(self):
+        # try:
+        with open('carawler/output/cars.csv', 'r') as f:
+            try:
+                self.cars_csv = f.readlines()
+                for s in xrange(0, len(self.cars_csv)):
+                    self.cars_csv[s] = self.cars_csv[s].strip('\r\n').strip(' ')
+                    print('=================================== print cars_csv =====================================')
+                    print(self.cars_csv[s])
+            except:
+                print('=================================== print cars_csv =====================================')
+                print('None')
+                self.cars_csv = None
+
     def process_item(self, item, spider):
-        with open('carawler/output/cars.csv', 'wb') as f:
+        with open('carawler/output/cars.csv', 'a+') as f:
+            header = 'ID,Post Title,Price,Location,URL'
+            header = header.strip()
             self.csvwriter = csv.writer(f, delimiter=',')
-            self.csvwriter.writerow(['Count', 'ID', 'Post Title', 'Price', 'Location', 'URL'])
+            # if the csv file is empty (header is not in the file), then add it
+            if self.cars_csv is None or len(self.cars_csv) == 0 or header != self.cars_csv[0]:
+                self.csvwriter.writerow(header.split(','))
             for id in item:
-                count = item[id]['count']
                 try:
                     title = item[id]['title'].encode('utf-8').strip()
                 except:
@@ -79,7 +109,15 @@ class CarawlerCSVPipeline(object):
                     url = item[id]['url'].encode('utf-8').strip()
                 except:
                     url = 'N/A'
-                self.csvwriter.writerow([count, id, title, price, location, url])
+                line = ','.join(map(str, [id, title, price, location, url])).strip()
+                print('=================================== line =====================================')
+                print(line)
+                # if this line isn't in the results already, add it
+                print('=================================== line not in self.cars_csv? =====================================')
+                print(line not in self.cars_csv)
+                print(self.cars_csv is None or line not in self.cars_csv)
+                if self.cars_csv is None or line not in self.cars_csv:
+                    self.csvwriter.writerow([id, title, price, location, url])
 
         return item
 
