@@ -21,8 +21,6 @@ vw cc
 2015 volkswagen passat
 2015 vw passat
 buick lacrosse
-infiniti
+infiniti g37
 g37
-jaguar
-lexus es
-lexus ls
+q50
