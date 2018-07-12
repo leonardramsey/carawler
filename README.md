@@ -27,9 +27,17 @@ source activate venv
 To run the project, call the following command:
 
 ```shell
-scrapy crawl sales
+./carawler_run.sh
 ```
 
+<b>Note:</b> It is possible that access permissions may need to be set in order to execute the shell script. In order to set execution permissions on the shell script, run the following command:
+
+```shell
+chmod u+x carawler_run.sh
+```
+
+By default, the shell script creates an empty output csv file with column headers, then runs the 'Sales' spider with a scrapy command.
+<hr>
 All output files are stored in the carawler/output directory.
 
 ### Output files:

@@ -71,27 +71,28 @@ class CarawlerFilterPipeline(object):
 class CarawlerCSVPipeline(object):
 
     def __init__(self):
-        # try:
-        with open('carawler/output/cars.csv', 'r') as f:
-            try:
-                self.cars_csv = f.readlines()
-                for s in xrange(0, len(self.cars_csv)):
-                    self.cars_csv[s] = self.cars_csv[s].strip('\r\n').strip(' ')
+        try:
+            with open('carawler/output/cars.csv', 'r') as f:
+                try:
+                    self.cars_csv = f.readlines()
+                    for s in xrange(0, len(self.cars_csv)):
+                        self.cars_csv[s] = self.cars_csv[s].strip('\r\n').strip(' ')
+                        print('=================================== print cars_csv =====================================')
+                        print(self.cars_csv[s])
+                except:
                     print('=================================== print cars_csv =====================================')
-                    print(self.cars_csv[s])
-            except:
+                    print('None')
+                    self.cars_csv = []
+        # file does not already exist
+        except:
+            with open('carawler/output/cars.csv', 'w'):
                 print('=================================== print cars_csv =====================================')
                 print('None')
-                self.cars_csv = None
+                self.cars_csv = []
 
     def process_item(self, item, spider):
         with open('carawler/output/cars.csv', 'a+') as f:
-            header = 'ID,Post Title,Price,Location,URL'
-            header = header.strip()
             self.csvwriter = csv.writer(f, delimiter=',')
-            # if the csv file is empty (header is not in the file), then add it
-            if self.cars_csv is None or len(self.cars_csv) == 0 or header != self.cars_csv[0]:
-                self.csvwriter.writerow(header.split(','))
             for id in item:
                 try:
                     title = item[id]['title'].encode('utf-8').strip()
@@ -106,18 +107,22 @@ class CarawlerCSVPipeline(object):
                 except:
                     location = 'N/A'
                 try:
+                    post_time = item[id]['post_time'].encode('utf-8').strip()
+                except:
+                    post_time = 'N/A'
+                try:
                     url = item[id]['url'].encode('utf-8').strip()
                 except:
                     url = 'N/A'
-                line = ','.join(map(str, [id, title, price, location, url])).strip()
+                line = '|~|'.join(map(str, [id, title, price, location, post_time, url])).strip()
                 print('=================================== line =====================================')
                 print(line)
                 # if this line isn't in the results already, add it
                 print('=================================== line not in self.cars_csv? =====================================')
                 print(line not in self.cars_csv)
-                print(self.cars_csv is None or line not in self.cars_csv)
-                if self.cars_csv is None or line not in self.cars_csv:
-                    self.csvwriter.writerow([id, title, price, location, url])
+                print(len(self.cars_csv) == 0 or line not in self.cars_csv)
+                if len(self.cars_csv) == 0 or line not in self.cars_csv:
+                    self.csvwriter.writerow(line.split('|~|'))
 
         return item
 

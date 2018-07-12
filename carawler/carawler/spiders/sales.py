@@ -24,6 +24,7 @@ class SalesSpider(scrapy.Spider):
             inst['title'] = car.xpath('a/text()').extract_first()
             inst['price'] = car.xpath('.//span[@class="result-price"]/text()').extract_first()
             inst['location'] = car.xpath('.//span[@class="result-hood"]/text()').extract_first()
+            inst['post_time'] = car.xpath('time/@datetime').extract_first()
             inst['url'] = car.xpath('a/@href').extract_first()
             item[inst['id']] = inst
         print("================================ response url =========================================")
