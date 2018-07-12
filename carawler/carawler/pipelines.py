@@ -77,17 +77,11 @@ class CarawlerCSVPipeline(object):
                     self.cars_csv = f.readlines()
                     for s in xrange(0, len(self.cars_csv)):
                         self.cars_csv[s] = self.cars_csv[s].strip('\r\n').strip(' ')
-                        print('=================================== print cars_csv =====================================')
-                        print(self.cars_csv[s])
                 except:
-                    print('=================================== print cars_csv =====================================')
-                    print('None')
                     self.cars_csv = []
         # file does not already exist
         except:
             with open('carawler/output/cars.csv', 'w'):
-                print('=================================== print cars_csv =====================================')
-                print('None')
                 self.cars_csv = []
 
     def process_item(self, item, spider):
@@ -115,12 +109,7 @@ class CarawlerCSVPipeline(object):
                 except:
                     url = 'N/A'
                 line = '|~|'.join(map(str, [id, title, price, location, post_time, url])).strip()
-                print('=================================== line =====================================')
-                print(line)
-                # if this line isn't in the results already, add it
-                print('=================================== line not in self.cars_csv? =====================================')
-                print(line not in self.cars_csv)
-                print(len(self.cars_csv) == 0 or line not in self.cars_csv)
+                # item duplicate filter: if this line isn't in the results already, add it
                 if len(self.cars_csv) == 0 or line not in self.cars_csv:
                     self.csvwriter.writerow(line.split('|~|'))
 

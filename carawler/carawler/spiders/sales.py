@@ -27,14 +27,7 @@ class SalesSpider(scrapy.Spider):
             inst['post_time'] = car.xpath('time/@datetime').extract_first()
             inst['url'] = car.xpath('a/@href').extract_first()
             item[inst['id']] = inst
-        print("================================ response url =========================================")
-        print(response.url)
-        print("================================ relative next url =========================================")
-        print(relative_next_url)
         absolute_url = response.url[0:response.url.find('/search')]
-        print("================================ absolute url =========================================")
-        print(absolute_url)
         if relative_next_url:
             yield Request(absolute_url + relative_next_url, meta={'item':item})
-
         yield item
