@@ -7,6 +7,7 @@
 import json, csv, os
 from scrapy.exporters import CsvItemExporter
 from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Color
 from scrapy.exceptions import DropItem
 
 # stage 1: read in from interested cars file and car_filter.txt out cars
@@ -66,6 +67,20 @@ class CarawlerFilterPipeline(object):
 
         return item
 
+# filter out duplicates, from Scrapy documentation
+# from scrapy.exceptions import DropItem
+#
+# class DuplicatesPipeline(object):
+#
+#     def __init__(self):
+#         self.ids_seen = set()
+#
+#     def process_item(self, item, spider):
+#         if item['id'] in self.ids_seen:
+#             raise DropItem("Duplicate item found: %s" % item)
+#         else:
+#             self.ids_seen.add(item['id'])
+#             return item
 
 # stage 2: store data in csv file
 class CarawlerCSVPipeline(object):
@@ -77,6 +92,8 @@ class CarawlerCSVPipeline(object):
                     self.cars_csv = f.readlines()
                     for s in xrange(0, len(self.cars_csv)):
                         self.cars_csv[s] = self.cars_csv[s].strip('\r\n').strip(' ')
+                        print "-----------------------------self.cars[s]-----------------------------------"
+                        print self.cars_csv[s]
                 except:
                     self.cars_csv = []
         # file does not already exist
@@ -89,15 +106,15 @@ class CarawlerCSVPipeline(object):
             self.csvwriter = csv.writer(f, delimiter=',')
             for id in item:
                 try:
-                    title = item[id]['title'].encode('utf-8').strip()
+                    title = item[id]['title'].encode('utf-8').strip().replace(',', '')
                 except:
                     title = 'N/A'
                 try:
-                    price = item[id]['price'].encode('utf-8').strip()
+                    price = item[id]['price'].encode('utf-8').strip().replace(',', '')
                 except:
                     price = 'N/A'
                 try:
-                    location = item[id]['location'].encode('utf-8').strip()
+                    location = item[id]['location'].encode('utf-8').strip().replace(',', '')
                 except:
                     location = 'N/A'
                 try:
@@ -108,10 +125,10 @@ class CarawlerCSVPipeline(object):
                     url = item[id]['url'].encode('utf-8').strip()
                 except:
                     url = 'N/A'
-                line = '|~|'.join(map(str, [id, title, price, location, post_time, url])).strip()
+                line = ','.join(map(str, [id, title, price, location, post_time, url])).strip()
                 # item duplicate filter: if this line isn't in the results already, add it
                 if len(self.cars_csv) == 0 or line not in self.cars_csv:
-                    self.csvwriter.writerow(line.split('|~|'))
+                    self.csvwriter.writerow(line.split(','))
 
         return item
 
@@ -130,7 +147,29 @@ class CarawlerConvertToSpreadsheetPipeline(object):
             reader = csv.reader(f)
             for r, row in enumerate(reader, start=1):
                 for c, val in enumerate(row, start=1):
+                    # r is row number, c, is column number (both 1-indexed)
                     ws.cell(row=r, column=c).value = val
+                    if r == 1: # headers = blue
+                        ws.cell(row=r, column=c).font = Font(size=16)
+                        ws.cell(row=r, column=c).fill = PatternFill(fgColor=Color('0087BD'),
+                                                                   fill_type='solid')
+                    else: # odd rows = gray
+                        ws.cell(row=r, column=c).font = Font(size=14)
+                        if r % 2 == 1: # row is odd but not equal to 1
+                            ws.cell(row=r, column=c).fill = PatternFill(fgColor=Color('BFC1C2'),
+                                                                        fill_type='solid')
+            # adjust column lengths in worksheet based on widest cells per column
+            for col in ws.columns:
+                max_length = 0
+                column = col[0].column  # Get the column name
+                for cell in col:
+                    try:  # Necessary to avoid error on empty cells
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(cell.value)
+                    except:
+                        pass
+                adjusted_width = (max_length + 2.0) * 1.1
+                ws.column_dimensions[column].width = adjusted_width
         wb.save(self.spreadsheetfilename)
 
         return item
