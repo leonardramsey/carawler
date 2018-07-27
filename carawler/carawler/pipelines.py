@@ -10,22 +10,33 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Color
 from scrapy.exceptions import DropItem
 
-# stage 1: read in from interested cars file and car_filter.txt out cars
+# stage 1: read in from interested cars file and whitelist.txt out cars
 # if the car title does not have any strings from the filter, remove the result
 # if the car's price is outside of the price filter range, remove the car
 class CarawlerFilterPipeline(object):
 
     # open filter files if they exist
     def __init__(self):
-        self.car_filter_filename = 'carawler/input/car_filter.txt'
+        self.whitelist_filename = 'carawler/input/whitelist.txt'
+        self.blacklist_filename = 'carawler/input/blacklist.txt'
         self.price_filter_filename = 'carawler/input/price_filter.txt'
+        # retrieve whitelist entries if possible
         try:
-            with open(self.car_filter_filename, 'rb') as car_filter:
-                self.car_filter = car_filter.readlines()
-                for i in range(0, len(self.car_filter)):
-                    self.car_filter[i] = self.car_filter[i].strip('\n').replace('*', '')
+            with open(self.whitelist_filename, 'rb') as whitelist:
+                self.whitelist = whitelist.readlines()
+                for i in range(0, len(self.whitelist)):
+                    self.whitelist[i] = self.whitelist[i].strip('\n').replace('*', '')
         except:
-            self.cars = None
+            self.whitelist = None
+        # retrieve blacklist entries if possible
+        try:
+            with open(self.blacklist_filename, 'rb') as blacklist:
+                self.blacklist = blacklist.readlines()
+                for i in range(0, len(self.blacklist)):
+                    self.blacklist[i] = self.blacklist[i].strip('\n').replace('*', '')
+        except:
+            self.blacklist = None
+        # retrieve price range for filtering if possible
         try:
             with open(self.price_filter_filename, 'rb') as price_filter:
                 self.min_price = int(price_filter.readline())
@@ -42,21 +53,26 @@ class CarawlerFilterPipeline(object):
             except:
                 title = None
 
-            # if none of the cars in the car filter are within the post title, remove this post from the results
+            # if title is empty, remove this result
             if title is not None:
-                if any(substring in title for substring in self.car_filter):
-                    # if the post is within the filter, check if the price is also in the filter; remove if not
-                    try:
-                        price = int(item[id]['price'].replace('$',''))
-                    except:  # price doesn't exist
-                        price = None
-                        ids_to_remove.append(id)
-                    if price is not None:
-                        if self.max_price < price or self.min_price > price:
+                # if there is any substring in the title that is in the blacklist,
+                # automatically remove this item. Else, check to ensure it is in whitelist.
+                if not any(substring in title for substring in self.blacklist):
+                    # if none of the cars in the car filter are within the post title, remove this post from the results
+                    if any(substring in title for substring in self.whitelist):
+                        # if the post is within the filter, check if the price is also in the filter; remove if not
+                        try:
+                            price = int(item[id]['price'].replace('$',''))
+                        except:  # price doesn't exist
+                            price = None
                             ids_to_remove.append(id)
+                        if price is not None:
+                            if self.max_price < price or self.min_price > price:
+                                ids_to_remove.append(id)
+                    else:
+                        ids_to_remove.append(id)
                 else:
                     ids_to_remove.append(id)
-
             # post has no title so remove this from results
             else:
                 ids_to_remove.append(id)
